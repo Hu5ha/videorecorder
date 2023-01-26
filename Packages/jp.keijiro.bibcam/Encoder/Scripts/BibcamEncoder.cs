@@ -9,7 +9,7 @@ public sealed class BibcamEncoder : MonoBehaviour
 
     public float minDepth { get => _minDepth; set => _minDepth = value; }
     public float maxDepth { get => _maxDepth; set => _maxDepth = value; }
-    public float ishsv { get => _ishsv; set => _ishsv = value; }
+    public int ishsv { get => _ishsv; set => _ishsv = value; }
     public Texture EncodedTexture => _encoded;
 
     #endregion
@@ -19,7 +19,7 @@ public sealed class BibcamEncoder : MonoBehaviour
     [SerializeField] BibcamXRDataProvider _xrSource = null;
     [SerializeField] float _minDepth = 0.025f;
     [SerializeField] float _maxDepth = 5;
-    [SerializeField] float _ishsv = 1;
+    [SerializeField] int _ishsv = 1;
     [SerializeField] Transform experienceOrigin;
 
     #endregion
@@ -43,10 +43,10 @@ public sealed class BibcamEncoder : MonoBehaviour
 
     void Start()
     {
-            if (ishsv > 0)
-                _shader = Shader.Find("Hidden/Bibcam/Encoder");
-            else
-                _shader = Shader.Find("Hidden/Bibcam/Encoderhue");
+        if (_ishsv == 0)
+            _shader = Shader.Find("Hidden/Bibcam/Encoder");
+        else if(_ishsv == 1)
+            _shader = Shader.Find("Hidden/Bibcam/Encoderhue");
         _material = new Material(_shader);
         _encoded = GfxUtil.RGBARenderTexture(1920, 1080);
         _metadata = GfxUtil.StructuredBuffer(18, sizeof(float));
@@ -78,36 +78,46 @@ public sealed class BibcamEncoder : MonoBehaviour
     // solve the problem, though.
     //
 
+    public bool generateTestPatterns = false;
+
     void OnBeforeApplicationRender()
     {
-        var tex = _xrSource.TextureSet; // we get from call back function AROcclusionFrameEventArgs
-        if (tex.y == null) return;
 
-        // Texture planes
-        _material.SetTexture(ShaderID.TextureY, tex.y);
-        _material.SetTexture(ShaderID.TextureCbCr, tex.cbcr);
-        _material.SetTexture(ShaderID.EnvironmentDepth, tex.depth);
-        _material.SetTexture(ShaderID.HumanStencil, tex.stencil);
+        if (generateTestPatterns)
+        {
 
-        // Aspect ratio compensation (camera vs. 16:9)
-        var aspectFix = 9.0f / 16 * tex.y.width / tex.y.height;
-        _material.SetFloat(ShaderID.AspectFix, aspectFix);
+        }
+        else
+        {
+            var tex = _xrSource.TextureSet; // we get from call back function AROcclusionFrameEventArgs
+            if (tex.y == null) return;
 
-        // Projection matrix
-        var proj = _xrSource.ProjectionMatrix;
-        proj[1, 1] = proj[0, 0] * 16 / 9; // Y-factor overriding (16:9)
+            // Texture planes
+            _material.SetTexture(ShaderID.TextureY, tex.y);
+            _material.SetTexture(ShaderID.TextureCbCr, tex.cbcr);
+            _material.SetTexture(ShaderID.EnvironmentDepth, tex.depth);
+            _material.SetTexture(ShaderID.HumanStencil, tex.stencil);
 
-        // Depth range
-        var range = new Vector2(_minDepth, _maxDepth);
-        _material.SetVector(ShaderID.DepthRange, range);
+            // Aspect ratio compensation (camera vs. 16:9)
+            var aspectFix = 9.0f / 16 * tex.y.width / tex.y.height;
+            _material.SetFloat(ShaderID.AspectFix, aspectFix);
 
-        // Metadata
-        _tempArray[0] = new Metadata(_xrSource.CameraTransform, proj, range, experienceOrigin);
-        _metadata.SetData(_tempArray);
-        _material.SetBuffer(ShaderID.Metadata, _metadata);
+            // Projection matrix
+            var proj = _xrSource.ProjectionMatrix;
+            proj[1, 1] = proj[0, 0] * 16 / 9; // Y-factor overriding (16:9)
 
-        // Encoding and multiplexing
-        Graphics.Blit(null, _encoded, _material);
+            // Depth range
+            var range = new Vector2(_minDepth, _maxDepth);
+            _material.SetVector(ShaderID.DepthRange, range);
+
+            // Metadata
+            _tempArray[0] = new Metadata(_xrSource.CameraTransform, proj, range, experienceOrigin);
+            _metadata.SetData(_tempArray);
+            _material.SetBuffer(ShaderID.Metadata, _metadata);
+
+            // Encoding and multiplexing
+            Graphics.Blit(null, _encoded, _material);
+        }
     }
 
     #endregion
