@@ -1,4 +1,4 @@
-Shader "Hidden/Bibcam/Encoder"
+Shader "Hidden/Bibcam/Encoderhue"
 {
     Properties
     {
@@ -66,7 +66,7 @@ float4 Fragment(float4 position : SV_Position,
 
     // Hue-encoded depth
     float depth = tex2D(_EnvironmentDepth, UVFix(UV_FullToDepth(texCoord))).x;
-    float3 z = EncodeDepth(depth, _DepthRange);
+    float3 z = EncodeDepth_hue(depth, _DepthRange);
 
     // Human stencil
     float s = tex2D(_HumanStencil, UVFix(UV_FullToStencil(texCoord))).x;

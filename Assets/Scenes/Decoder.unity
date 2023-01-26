@@ -371,7 +371,7 @@ VideoPlayer:
   - {fileID: 0}
   m_DirectAudioVolumes:
   - 1
-  m_Url: http://141.76.64.17:8080/RGBDs/Record_1109_1632_46.MP4
+  m_Url: file://C:/Users/IXLAB/Downloads/rp/ixrgbdvideorecorder_align-master/Record_1110_1824_31.mp4
   m_EnabledAudioTracks: 01
   m_DirectAudioMutes: 00
   m_ControlledAudioTrackCount: 1
@@ -491,3 +491,5 @@ MonoBehaviour:
   ARCamera: {fileID: 153388030}
   ARObjectOrigin: {fileID: 0}
   enableAlignment: 0
+  enableMarkerDetection: 1
+  DetectionUI: {fileID: 0}

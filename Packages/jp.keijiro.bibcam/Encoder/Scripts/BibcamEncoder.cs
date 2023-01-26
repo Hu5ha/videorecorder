@@ -9,23 +9,24 @@ public sealed class BibcamEncoder : MonoBehaviour
 
     public float minDepth { get => _minDepth; set => _minDepth = value; }
     public float maxDepth { get => _maxDepth; set => _maxDepth = value; }
+    public float ishsv { get => _ishsv; set => _ishsv = value; }
     public Texture EncodedTexture => _encoded;
 
-    public float hsv { get => _hsv; set => _hsv = value; }
-        #endregion
+    #endregion
 
-        #region Editable attributes
+    #region Editable attributes
 
     [SerializeField] BibcamXRDataProvider _xrSource = null;
     [SerializeField] float _minDepth = 0.025f;
     [SerializeField] float _maxDepth = 5;
+    [SerializeField] float _ishsv = 1;
     [SerializeField] Transform experienceOrigin;
-    [SerializeField] float _hsv = 1;
-        #endregion
 
-        #region Hidden asset references
+    #endregion
 
-        [SerializeField] Shader _shader = null;
+    #region Hidden asset references
+
+    [SerializeField] Shader _shader = null;
 
     #endregion
 
@@ -42,6 +43,10 @@ public sealed class BibcamEncoder : MonoBehaviour
 
     void Start()
     {
+            if (ishsv > 0)
+                _shader = Shader.Find("Hidden/Bibcam/Encoder");
+            else
+                _shader = Shader.Find("Hidden/Bibcam/Encoderhue");
         _material = new Material(_shader);
         _encoded = GfxUtil.RGBARenderTexture(1920, 1080);
         _metadata = GfxUtil.StructuredBuffer(18, sizeof(float));
@@ -83,11 +88,6 @@ public sealed class BibcamEncoder : MonoBehaviour
         _material.SetTexture(ShaderID.TextureCbCr, tex.cbcr);
         _material.SetTexture(ShaderID.EnvironmentDepth, tex.depth);
         _material.SetTexture(ShaderID.HumanStencil, tex.stencil);
-
-            //set encode method
-            var tmp = hsv;
-         _material.SetFloat(ShaderID.hsv, tmp);
-           
 
         // Aspect ratio compensation (camera vs. 16:9)
         var aspectFix = 9.0f / 16 * tex.y.width / tex.y.height;

@@ -43,10 +43,11 @@ float3 EncodeDepth(float depth, float2 range)
     // Margin
     depth = saturate(depth) * (1 - DepthHueMargin * 2) + DepthHueMargin;
     // Hue encoding
-    return Hue2RGB(depth);
+    return hsv2rgb(float3(depth, 1, 1));
+        //Hue2RGB(depth);
 }
 
-float3 EncodeDepth_hsv(float depth, float2 range)
+float3 EncodeDepth_hue(float depth, float2 range)
 {
     // Depth range
     depth = (depth - range.x) / (range.y - range.x);
@@ -55,8 +56,7 @@ float3 EncodeDepth_hsv(float depth, float2 range)
     // Margin
     depth = saturate(depth) * (1 - DepthHueMargin * 2) + DepthHueMargin;
     // Hue encoding
-    return hsv2rgb(float3(depth, 1, 1));
-        //Hue2RGB(depth);
+    return Hue2RGB(depth);
 }
 
 float RGB2Hue(float3 c)
@@ -84,8 +84,8 @@ float3 rgb2hsv(float3 RGB)
 
 float DecodeDepth(float3 rgb, float2 range)
 {
-    // Hue decoding
-    float depth = RGB2Hue(rgb);
+    // hsv decoding
+    float depth = rgb2hsv(rgb).x;
     // Padding/margin
     depth = (depth - DepthHueMargin ) / (1 - DepthHueMargin  * 2);
     depth = (depth - DepthHuePadding) / (1 - DepthHuePadding * 2);
@@ -93,11 +93,10 @@ float DecodeDepth(float3 rgb, float2 range)
     return lerp(range.x, range.y, depth);
 }
 
-float DecodeDepth_hsv(float3 rgb, float2 range)
+float DecodeDepth_hue(float3 rgb, float2 range)
 {
     // Hue decoding
-    float depth = rgb2hsv(rgb).x;
-        //RGB2Hue(rgb);
+    float depth = RGB2Hue(rgb);
     // Padding/margin
     depth = (depth - DepthHueMargin ) / (1 - DepthHueMargin  * 2);
     depth = (depth - DepthHuePadding) / (1 - DepthHuePadding * 2);

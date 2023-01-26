@@ -20,7 +20,6 @@ public static class ShaderID
     public static readonly int     StencilColor = Shader.PropertyToID("_StencilColor");
     public static readonly int      TextureCbCr = Shader.PropertyToID("_textureCbCr");
     public static readonly int         TextureY = Shader.PropertyToID("_textureY");
-        public static string hsv;
-    }
+}
 
 } // namespace Bibcam.Common
